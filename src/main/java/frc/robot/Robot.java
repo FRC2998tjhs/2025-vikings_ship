@@ -14,7 +14,7 @@ public class Robot extends TimedRobot {
 
   AprilTags aprilTags = new AprilTags();
 
-  SwerveModule swerve = new SwerveModule(3, 4, 0, new SwerveCalibration());
+  SwerveModule swerve = new SwerveModule(2, 2, 0, new SwerveCalibration());
 
   XboxController controller = new XboxController(0);
 

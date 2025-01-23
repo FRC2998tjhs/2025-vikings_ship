@@ -1,6 +1,8 @@
 package frc.robot;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -13,34 +15,34 @@ public class SwerveModule {
     private SwerveCalibration calibration;
 
     private final TalonFX driveMotor;
-    private final TalonFX turningMotor;
+    private final SparkMax turningMotor;
 
     private final PIDController turningPid;
 
     private final AnalogInput absoluteEncoder;
 
-    public SwerveModule(int driveMotorPort, int turningMotorPort, int absoluteEncoderPort,
-            SwerveCalibration calibration) {
+    public SwerveModule(int driveMotorPort, int turningMotorPort, int absoluteEncoderPort, SwerveCalibration calibration) {
         this.calibration = calibration;
         this.driveMotor = new TalonFX(driveMotorPort);
-        this.turningMotor = new TalonFX(turningMotorPort);
+        this.turningMotor = new SparkMax(turningMotorPort, MotorType.kBrushless);
         this.absoluteEncoder = new AnalogInput(absoluteEncoderPort);
 
-        this.turningPid = new PIDController(0.1, 0.0, 0);
+        this.turningPid = new PIDController(.01, 0., 0.);
     }
 
     private Rotation2d currentRotationReading() {
         double angle = absoluteEncoder.getVoltage() / RobotController.getVoltage5V();
-        angle = (angle * 2.0 * Math.PI) - Math.PI;
-        return Rotation2d.fromRadians(angle);
+        angle = (angle * 360.) - 180.;
+        return Rotation2d.fromDegrees(angle);
     }
 
     public void setDesiredState(SwerveModuleState state) {
         var calibrated = calibration.adjust(state, currentRotationReading());
-        driveMotor.set(calibrated.speedMetersPerSecond / 0.2);
 
-        var rotationSpeed = turningPid.calculate(currentRotationReading().getRadians(), state.angle.getRadians());
-        rotationSpeed = clamp(rotationSpeed, -0.4, 0.4);
+        driveMotor.set(calibrated.driveSpeed);
+
+        var rotationSpeed = turningPid.calculate(calibrated.angleError.getDegrees(), 0.);
+        rotationSpeed = clamp(rotationSpeed, -1, 1);
         turningMotor.set(rotationSpeed);
     }
 

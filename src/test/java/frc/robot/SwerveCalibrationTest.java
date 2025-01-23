@@ -8,98 +8,81 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 
 public class SwerveCalibrationTest {
+    private Rotation2d deg(double degrees) {
+        return Rotation2d.fromDegrees(degrees);
+    }
+
     @Test
     void isSameStateWithZeros() {
-        var target = new SwerveModuleState(0, new Rotation2d());
+        var target = new SwerveModuleState(0, deg(0.));
 
-        var subject = new SwerveCalibration();
-        var newState = subject.adjust(target, new Rotation2d());
+        var result = new SwerveCalibration().adjust(target, deg(0.));
 
-        assertEquals(new SwerveModuleState(0, new Rotation2d()), newState);
+        assertEquals(result.driveSpeed, 0.);
+        assertEquals(result.angleError.getDegrees(), 0.);
     }
 
     @Test
     void negatesSpeedWithOppositeAngle() {
-        var target = new SwerveModuleState(1., new Rotation2d());
+        var target = new SwerveModuleState(1., deg(0.));
 
-        var subject = new SwerveCalibration();
-        var newState = subject.adjust(target, Rotation2d.fromDegrees(180.));
+        var result = new SwerveCalibration().adjust(target, deg(180.));
 
-        assertEquals(-1, newState.speedMetersPerSecond);
+        assertEquals(result.driveSpeed, -1.);
+        assertEquals(result.angleError.getDegrees(), 0.);
     }
 
     @Test
     void doesNotNegateSpeedWithCorrectAngle() {
-        var target = new SwerveModuleState(1., new Rotation2d());
+        var target = new SwerveModuleState(1., deg(0.));
+        var result = new SwerveCalibration().adjust(target, deg(0.));
 
-        var subject = new SwerveCalibration();
-        var newState = subject.adjust(target, new Rotation2d());
-
-        assertEquals(new SwerveModuleState(1., new Rotation2d()), newState);
+        assertEquals(result.driveSpeed, 1.);
+        assertEquals(result.angleError.getDegrees(), 0.);
     }
 
     @Test
     void doesNotNegateSpeedWithCloseAngle() {
-        var subject = new SwerveCalibration();
+        var target = new SwerveModuleState(1., deg(0.));
+        var result = new SwerveCalibration().adjust(target, deg(30.));
 
-        var newState = subject.adjust(new SwerveModuleState(1., new Rotation2d()), Rotation2d.fromDegrees(30.));
-
-        assertEquals(1., newState.speedMetersPerSecond);
+        assertEquals(result.driveSpeed, 1.);
+        assertEquals(result.angleError.getDegrees(), -30., 0.1);
     }
 
     @Test
     void reduces270To90() {
-        var subject = new SwerveCalibration();
+        var target = new SwerveModuleState(1., deg(271.));
+        var result = new SwerveCalibration().adjust(target, deg(0.));
 
-        var newState = subject.adjust(new SwerveModuleState(1., Rotation2d.fromDegrees(270)), new Rotation2d());
-
-        assertEquals(-1, newState.speedMetersPerSecond);
-        assertEquals(90., newState.angle.getDegrees());
+        assertEquals(result.driveSpeed, 1.);
+        assertEquals(result.angleError.getDegrees(), -89., 0.1);
     }
 
     @Test
     void changesNegative270to90() {
-        var subject = new SwerveCalibration();
+        var target = new SwerveModuleState(1., deg(-269.));
+        var result = new SwerveCalibration().adjust(target, deg(-270.));
 
-        var newState = subject.adjust(new SwerveModuleState(1., Rotation2d.fromDegrees(-270)), Rotation2d.fromDegrees(-270));
-
-        assertEquals(90., newState.angle.getDegrees());
+        assertEquals(result.driveSpeed, 1.);
+        assertEquals(result.angleError.getDegrees(), 1., 0.1);
     }
 
     @Test
-    void needsToAbsDifference() {
-        var subject = new SwerveCalibration();
+    void goesToCloserPosition() {
+        var target = new SwerveModuleState(1., deg(90));
+        var result = new SwerveCalibration().adjust(target, deg(-45));
 
-        var newState = subject.adjust(new SwerveModuleState(1., Rotation2d.fromDegrees(90)), new Rotation2d(-45));
-
-        assertEquals(-1., newState.speedMetersPerSecond);
-    }
-
-    @Test
-    void setsOppositeAngle() {
-        var subject = new SwerveCalibration();
-
-        var newState = subject.adjust(new SwerveModuleState(1., Rotation2d.fromDegrees(0)), Rotation2d.fromDegrees(170));
-
-        assertEquals(180., newState.angle.getDegrees());
-    }
-
-    @Test
-    void setsOppositeAngleFromLeftSide() {
-        var subject = new SwerveCalibration();
-
-        var newState = subject.adjust(new SwerveModuleState(1., Rotation2d.fromDegrees(0)), Rotation2d.fromDegrees(-170));
-
-        assertEquals(180., newState.angle.getDegrees());
+        assertEquals(result.driveSpeed, -1.);
+        assertEquals(result.angleError.getDegrees(), -45., 0.1);
     }
 
     @Test
     void adjustsByOffsetAngle() {
-        var subject = new SwerveCalibration(Rotation2d.fromDegrees(30));
+        var target = new SwerveModuleState(1., deg(0));
+        var result = new SwerveCalibration(deg(30.)).adjust(target, deg(90));
 
-        var newState = subject.adjust(new SwerveModuleState(1., Rotation2d.fromDegrees(0)), Rotation2d.fromDegrees(90));
-
-        System.out.println(newState.angle.getDegrees());
-        assertEquals(-30, newState.angle.getDegrees(), 0.1);
+        assertEquals(result.driveSpeed, 1.);
+        assertEquals(result.angleError.getDegrees(), -60., 0.1);
     }
 }

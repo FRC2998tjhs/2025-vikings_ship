@@ -5,28 +5,38 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 
 public class SwerveCalibration {
     private Rotation2d wheelMinusForward;
+    private double mpsToMotor;
 
     public SwerveCalibration() {
-        this(new Rotation2d());
+        this(new Rotation2d(), 1.0);
     }
 
-    public SwerveCalibration(Rotation2d wheelMinusForward) {
+    public SwerveCalibration(Rotation2d wheelMinusForward, double mpsToMotor) {
         this.wheelMinusForward = wheelMinusForward;
+        this.mpsToMotor = mpsToMotor;
     }
 
-    public SwerveModuleState adjust(SwerveModuleState desiredState, Rotation2d measuredRotation) {
-        var result = new SwerveModuleState(desiredState.speedMetersPerSecond, normalize(desiredState.angle));
+    public class SwerveTarget {
+        public Rotation2d angleError;
+        public double driveSpeed;
 
-        measuredRotation = normalize(measuredRotation);
+        private SwerveTarget(double speed, Rotation2d error) {
+            this.driveSpeed = speed;
+            this.angleError = error;
+        }
+    }
 
-        Rotation2d difference = normalize(measuredRotation.minus(desiredState.angle));
+    public SwerveTarget adjust(SwerveModuleState desiredState, Rotation2d measuredRotation) {
+        Rotation2d difference = normalize(desiredState.angle.minus(measuredRotation));
+
+        var result = new SwerveTarget(desiredState.speedMetersPerSecond * mpsToMotor, difference);
 
         boolean correctDirection = Math.abs(difference.getDegrees()) <= 90;
         if (!correctDirection) {
-            result.speedMetersPerSecond *= -1;
-            result.angle = result.angle.plus(Rotation2d.fromDegrees(180));
+            result.driveSpeed *= -1;
+            result.angleError = result.angleError.minus(Rotation2d.fromDegrees(180));
         }
-        result.angle = result.angle.minus(wheelMinusForward);
+        result.angleError = result.angleError.plus(wheelMinusForward);
 
         return result;
     }
