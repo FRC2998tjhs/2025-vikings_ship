@@ -31,7 +31,7 @@ public class SwerveModule {
         this.turningPid = new PIDController(.01, 0., 0.);
     }
 
-    private Rotation2d currentRotationReading() {
+    public Rotation2d currentRotationReading() {
         double angle = absoluteEncoder.getVoltage() / RobotController.getVoltage5V();
         angle = (angle * 360.) - 180.;
         return Rotation2d.fromDegrees(angle);
