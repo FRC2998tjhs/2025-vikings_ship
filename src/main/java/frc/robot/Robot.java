@@ -1,5 +1,7 @@
 package frc.robot;
 
+import org.dyn4j.geometry.Vector2;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTable;
@@ -14,9 +16,14 @@ public class Robot extends TimedRobot {
 
   AprilTags aprilTags = new AprilTags();
 
-  SwerveModule swerve = new SwerveModule(2, 2, 0, new SwerveCalibration());
-
   XboxController controller = new XboxController(0);
+
+  Rotation2d targetAngle = new Rotation2d();
+
+  SwerveGroup swerves = = new SwerveGroup([
+
+  ]);
+  SwerveModule frontRight = new SwerveModule(2, 2, 0, new SwerveCalibration(Rotation2d.fromDegrees(-15.), 1.0, true));
 
   @Override
   public void robotPeriodic() {
@@ -25,7 +32,12 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    var angle = new Rotation2d(controller.getRightX(), controller.getRightY());
-    swerve.setDesiredState(new SwerveModuleState(controller.getRightTriggerAxis(), angle));
+    var vector = new Vector2(controller.getLeftX(), controller.getLeftY());
+    if (vector.getMagnitude() > 0.1) {
+      targetAngle = new Rotation2d(controller.getRightX(), controller.getRightY());
+    } else {
+
+    }
+    frontRight.setDesiredState(new SwerveModuleState(controller.getRightTriggerAxis(), targetAngle));
   }
 }

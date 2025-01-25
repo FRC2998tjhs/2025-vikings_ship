@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
 
 public class SwerveModule {
+    private static final double DRIVE_WHILE_TURNING_CORRECTION = 0.16;
 
     private SwerveCalibration calibration;
 
@@ -39,11 +40,11 @@ public class SwerveModule {
     public void setDesiredState(SwerveModuleState state) {
         var calibrated = calibration.adjust(state, currentRotationReading());
 
-        driveMotor.set(calibrated.driveSpeed);
-
         var rotationSpeed = turningPid.calculate(calibrated.angleError.getDegrees(), 0.);
         rotationSpeed = clamp(rotationSpeed, -1, 1);
+
         turningMotor.set(rotationSpeed);
+        driveMotor.set(calibrated.driveSpeed - DRIVE_WHILE_TURNING_CORRECTION * rotationSpeed);
     }
 
     private double clamp(double x, double min, double max) {

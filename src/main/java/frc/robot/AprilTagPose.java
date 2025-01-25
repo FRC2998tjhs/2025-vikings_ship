@@ -5,8 +5,8 @@ import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator;
 
 public class AprilTagPose {
-    private AprilTagDetection detection;
-    private AprilTagPoseEstimate pose;
+    public AprilTagDetection detection;
+    public AprilTagPoseEstimate pose;
 
     private AprilTagPose(AprilTagDetection detection, AprilTagPoseEstimate pose) {
         this.detection = detection;
