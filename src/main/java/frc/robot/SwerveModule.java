@@ -47,7 +47,7 @@ public class SwerveModule {
         driveMotor.set(calibrated.driveSpeed - DRIVE_WHILE_TURNING_CORRECTION * rotationSpeed);
     }
 
-    private double clamp(double x, double min, double max) {
+    public static double clamp(double x, double min, double max) {
         if (x < min)
             return min;
         if (x > max)
