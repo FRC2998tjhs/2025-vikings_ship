@@ -18,12 +18,11 @@ public class SwerveMovement {
 
     public void setDesiredState(Vector2 direction, double turn) {
         turn = SwerveModule.clamp(turn, -1, 1);
-        var rotateOffsets = turn >= 0. ? Rotation2d.fromRadians(Math.PI / 2) : Rotation2d.fromRadians(-Math.PI / 2);
-        var absTurn = Math.abs(turn);
+        var ccwTurn = -turn;
 
-        var forTranslation = new Rotation2d(direction.x, direction.y);
         var translationSpeed = direction.getMagnitude();
 
+        var absTurn = Math.abs(ccwTurn);
         var totalWeight = translationSpeed + absTurn;
         if (totalWeight < 0.1) {
             for (var module : moduleOffsets.keySet()) {
@@ -32,17 +31,31 @@ public class SwerveMovement {
             return;
         }
 
+        var forTranslation = new Rotation2d(direction.x, direction.y);
+
         var speedWeight = translationSpeed / totalWeight;
         var turnWeight = absTurn / totalWeight;
 
         for (var entry : moduleOffsets.entrySet()) {
-            var forTurning = new Rotation2d(entry.getValue().x, entry.getValue().y);
-            // .plus(rotateOffsets);
+            Vector2 offset = entry.getValue();
+            var forTurning = turnAngle(offset, ccwTurn);
 
             var rotation = forTurning.times(turnWeight).plus(forTranslation.times(speedWeight));
-            var speed = translationSpeed * speedWeight + turn * turnWeight;
+            var speed = translationSpeed * speedWeight + ccwTurn * turnWeight;
 
-            entry.getKey().setDesiredState(new SwerveModuleState(speed, rotation));
+            var state = new SwerveModuleState(speed, rotation);
+            entry.getKey().setDesiredState(state);
+        }
+    }
+
+    public static Rotation2d turnAngle(Vector2 offset, double turnSpeed) {
+        var rotate = turnSpeed >= 0. ? Rotation2d.kCCW_Pi_2 : Rotation2d.kCCW_Pi_2;
+        return new Rotation2d(offset.x, offset.y).plus(rotate);
+    }
+
+    public void stop() {
+        for (var module : moduleOffsets.keySet()) {
+            module.stop();
         }
     }
 }

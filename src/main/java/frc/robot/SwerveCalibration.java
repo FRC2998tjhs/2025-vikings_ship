@@ -6,16 +6,16 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 public class SwerveCalibration {
     private Rotation2d wheelMinusForward;
     private double mpsToMotor;
-    private boolean inverseRotation;
+    public boolean invert;
 
     public SwerveCalibration() {
         this(new Rotation2d(), 1.0, false);
     }
 
-    public SwerveCalibration(Rotation2d wheelMinusForward, double mpsToMotor, boolean inverse) {
+    public SwerveCalibration(Rotation2d wheelMinusForward, double mpsToMotor, boolean invert) {
         this.wheelMinusForward = wheelMinusForward;
         this.mpsToMotor = mpsToMotor;
-        this.inverseRotation = inverse;
+        this.invert = invert;
     }
 
     public class SwerveTarget {
@@ -29,9 +29,6 @@ public class SwerveCalibration {
     }
 
     public SwerveTarget adjust(SwerveModuleState desiredState, Rotation2d measuredRotation) {
-        if (inverseRotation) {
-            measuredRotation = measuredRotation.times(-1);
-        }
         Rotation2d difference = normalize(desiredState.angle.minus(measuredRotation));
 
         var result = new SwerveTarget(desiredState.speedMetersPerSecond * mpsToMotor, difference);
@@ -42,9 +39,6 @@ public class SwerveCalibration {
             result.angleError = result.angleError.minus(Rotation2d.fromDegrees(180));
         }
         result.angleError = result.angleError.plus(wheelMinusForward);
-        if (inverseRotation) {
-            result.angleError = result.angleError.times(-1);
-        }
 
         return result;
     }

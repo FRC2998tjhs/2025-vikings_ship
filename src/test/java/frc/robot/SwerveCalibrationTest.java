@@ -87,11 +87,29 @@ public class SwerveCalibrationTest {
     }
 
     @Test
-    void invertsDirectionOfRotation() {
+    void adjustsByLargeOffsetAngle() {
         var target = new SwerveModuleState(1., deg(0));
-        var result = new SwerveCalibration(deg(0.), 1.0, true).adjust(target, deg(30));
+        var result = new SwerveCalibration(deg(80.), 1.0, false).adjust(target, deg(90));
 
         assertEquals(result.driveSpeed, 1.);
-        assertEquals(result.angleError.getDegrees(), -60., 0.1);
+        assertEquals(result.angleError.getDegrees(), -10., 0.1);
     }
+
+    @Test
+    void adjustsByNegativeOffsetAngle() {
+        var target = new SwerveModuleState(1., deg(0));
+        var result = new SwerveCalibration(deg(-30), 1.0, false).adjust(target, deg(-90));
+
+        assertEquals(result.driveSpeed, 1.);
+        assertEquals(result.angleError.getDegrees(), 60., 0.1);
+    }
+
+    // @Test
+    // void invertsDirectionOfRotation() {
+    //     var target = new SwerveModuleState(1., deg(0));
+    //     var result = new SwerveCalibration(deg(0.), 1.0, true).adjust(target, deg(30));
+
+    //     assertEquals(result.driveSpeed, 1.);
+    //     assertEquals(result.angleError.getDegrees(), -60., 0.1);
+    // }
 }
