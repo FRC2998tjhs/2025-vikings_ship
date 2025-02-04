@@ -25,13 +25,14 @@ public class SwerveMovement {
         var absTurn = Math.abs(ccwTurn);
         var totalWeight = translationSpeed + absTurn;
         if (totalWeight < 0.1) {
-            for (var module : moduleOffsets.keySet()) {
-                module.setDesiredState(new SwerveModuleState());
-            }
+            stop();
             return;
         }
 
-        var forTranslation = new Rotation2d(direction.x, direction.y);
+        var forTranslation = new Rotation2d();
+        if (direction.getMagnitude() > 0.01) {
+            forTranslation = new Rotation2d(direction.x, direction.y);
+        }
 
         var speedWeight = translationSpeed / totalWeight;
         var turnWeight = absTurn / totalWeight;

@@ -104,12 +104,12 @@ public class SwerveCalibrationTest {
         assertEquals(result.angleError.getDegrees(), 60., 0.1);
     }
 
-    // @Test
-    // void invertsDirectionOfRotation() {
-    //     var target = new SwerveModuleState(1., deg(0));
-    //     var result = new SwerveCalibration(deg(0.), 1.0, true).adjust(target, deg(30));
+    @Test
+    void reproducingIssue() {
+        var result = new SwerveCalibration(deg(-68.2), 1.0, false)
+                .adjust(new SwerveModuleState(0., deg(100)), deg(-34.81));
 
-    //     assertEquals(result.driveSpeed, 1.);
-    //     assertEquals(result.angleError.getDegrees(), -60., 0.1);
-    // }
+        System.out.println(result.angleError);
+        assertEquals(result.angleError.getDegrees(), 66.61, 0.1);
+    }
 }

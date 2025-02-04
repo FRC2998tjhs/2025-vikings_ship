@@ -5,11 +5,12 @@ import org.dyn4j.geometry.Vector2;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
-  AprilTags aprilTags = new AprilTags();
+  // AprilTags aprilTags = new AprilTags();
 
   XboxController controller = new XboxController(0);
 
@@ -34,8 +35,6 @@ public class Robot extends TimedRobot {
       .add(backRight, new Vector2(0.5, -0.6))
       .add(backLeft, new Vector2(-0.5, -0.6));
 
-  Rotation2d angle = new Rotation2d();
-
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
@@ -54,34 +53,20 @@ public class Robot extends TimedRobot {
 
     swerves.stop();
 
+    var maxSpeed = 0.4;
+
     var leftStick = new Vector2(controller.getLeftX(), -controller.getLeftY());
     if (leftStick.getMagnitude() < 0.2) {
       leftStick = new Vector2();
     }
-    leftStick = leftStick.multiply(0.4);
-    var angle = new Rotation2d(leftStick.x, leftStick.y);
-    var state = new SwerveModuleState(leftStick.getMagnitude(), angle);
-
-    if (controller.getAButton()) {
-      frontRight.setDesiredState(state);
-    }
-    if (controller.getBButton()) {
-      frontLeft.setDesiredState(state);
-    }
-    if (controller.getYButton()) {
-      backLeft.setDesiredState(state);
-    }
-    if (controller.getXButton()) {
-      backRight.setDesiredState(state);
-    }
+    leftStick = leftStick.multiply(maxSpeed);
 
     var turnSpeed = controller.getRightX();
     if (Math.abs(turnSpeed) < 0.1) {
       turnSpeed = 0;
     }
-    turnSpeed *= 0.4;
-    if (true || controller.getRightBumperButton()) {
-      swerves.setDesiredState(leftStick, turnSpeed);
-    }
+    turnSpeed *= maxSpeed;
+
+    swerves.setDesiredState(leftStick, turnSpeed);
   }
 }

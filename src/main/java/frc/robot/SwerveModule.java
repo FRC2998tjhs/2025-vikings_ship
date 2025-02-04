@@ -9,9 +9,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 
 public class SwerveModule {
     private static final double DRIVE_WHILE_TURNING_CORRECTION = 0.16;
@@ -48,10 +45,6 @@ public class SwerveModule {
             stop();
             return;
         }
-
-        // System.out.println("Read: " + reading.getDegrees());
-        // System.out.println("Target: " + state.angle.getDegrees());
-        // System.out.println("Error: " + calibrated.angleError.getDegrees());
 
         var needToMove = calibrated.angleError.getDegrees();
         var rotationSpeed = turningPid.calculate(needToMove, 0.);

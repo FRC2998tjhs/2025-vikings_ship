@@ -29,7 +29,9 @@ public class SwerveCalibration {
     }
 
     public SwerveTarget adjust(SwerveModuleState desiredState, Rotation2d measuredRotation) {
-        Rotation2d difference = normalize(desiredState.angle.minus(measuredRotation));
+        Rotation2d actualAngle = measuredRotation.minus(wheelMinusForward);
+
+        Rotation2d difference = normalize(desiredState.angle.minus(actualAngle));
 
         var result = new SwerveTarget(desiredState.speedMetersPerSecond * mpsToMotor, difference);
 
@@ -38,12 +40,11 @@ public class SwerveCalibration {
             result.driveSpeed *= -1;
             result.angleError = result.angleError.minus(Rotation2d.fromDegrees(180));
         }
-        result.angleError = result.angleError.plus(wheelMinusForward);
 
         return result;
     }
 
-    private Rotation2d normalize(Rotation2d rot) {
+    public static Rotation2d normalize(Rotation2d rot) {
         var result = Rotation2d.fromDegrees(rot.getDegrees());
 
         while (result.getDegrees() > 180) {
