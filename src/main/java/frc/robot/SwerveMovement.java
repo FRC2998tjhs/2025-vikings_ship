@@ -23,29 +23,25 @@ public class SwerveMovement {
         var translationSpeed = direction.getMagnitude();
 
         var absTurn = Math.abs(ccwTurn);
-        var totalWeight = translationSpeed + absTurn;
-        if (totalWeight < 0.1) {
+        var totalSpeed = translationSpeed + absTurn;
+        if (totalSpeed < 0.05) {
             stop();
             return;
         }
 
-        var forTranslation = new Rotation2d();
-        if (direction.getMagnitude() > 0.01) {
-            forTranslation = new Rotation2d(direction.x, direction.y);
-        }
-
-        var speedWeight = translationSpeed / totalWeight;
-        var turnWeight = absTurn / totalWeight;
-
         for (var entry : moduleOffsets.entrySet()) {
             Vector2 offset = entry.getValue();
-            var forTurning = turnAngle(offset, ccwTurn);
+            var turnVector = new Vector2(offset.x, offset.y)
+                    .rotate((ccwTurn >= 0. ? Rotation2d.kCCW_Pi_2 : Rotation2d.kCW_Pi_2).getRadians())
+                    .multiply(absTurn);
 
-            var rotation = forTurning.times(turnWeight).plus(forTranslation.times(speedWeight));
-            var speed = translationSpeed * speedWeight + ccwTurn * turnWeight;
+            var wheel = turnVector.add(direction);
+            if (totalSpeed > 1.) {
+                wheel = wheel.divide(totalSpeed);
+            }
 
-            var state = new SwerveModuleState(speed, rotation);
-            entry.getKey().setDesiredState(state);
+            var rotation = new Rotation2d(wheel.x, wheel.y);
+            entry.getKey().setDesiredState(new SwerveModuleState(wheel.getMagnitude(), rotation));
         }
     }
 
