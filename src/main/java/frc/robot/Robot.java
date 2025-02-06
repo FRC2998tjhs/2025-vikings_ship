@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
-  // AprilTags aprilTags = new AprilTags();
+  AprilTags aprilTags = new AprilTags();
 
   XboxController controller = new XboxController(0);
 
@@ -35,6 +35,9 @@ public class Robot extends TimedRobot {
       .add(backRight, new Vector2(0.5, -0.6))
       .add(backLeft, new Vector2(-0.5, -0.6));
 
+  // Control control = new XboxControl(controller, swerves);
+  Control control = new FollowAprilTags(aprilTags, swerves);
+
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
@@ -50,23 +53,7 @@ public class Robot extends TimedRobot {
     // if (true) {
     // return;
     // }
-
     swerves.stop();
-
-    var maxSpeed = 0.4;
-
-    var leftStick = new Vector2(controller.getLeftX(), -controller.getLeftY());
-    if (leftStick.getMagnitude() < 0.2) {
-      leftStick = new Vector2();
-    }
-    leftStick = leftStick.multiply(maxSpeed);
-
-    var turnSpeed = controller.getRightX();
-    if (Math.abs(turnSpeed) < 0.1) {
-      turnSpeed = 0;
-    }
-    turnSpeed *= maxSpeed;
-
-    swerves.setDesiredState(leftStick, turnSpeed);
+    control.teleopPeriodic();
   }
 }
