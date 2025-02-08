@@ -41,28 +41,20 @@ public class SwerveModule {
         Rotation2d reading = currentRotationReading();
         var calibrated = calibration.adjust(state, reading);
 
-        if (Math.abs(calibrated.driveSpeed) < 0.05) {
+        if (Math.abs(calibrated.driveSpeed) < 0.001) {
             stop();
             return;
         }
 
         var needToMove = calibrated.angleError.getDegrees();
         var rotationSpeed = turningPid.calculate(needToMove, 0.);
-        rotationSpeed = clamp(rotationSpeed, -1, 1);
+        rotationSpeed = VikingMath.clamp(rotationSpeed, -1, 1);
         if (calibration.invert) {
             rotationSpeed *= -1;
         }
 
         turningMotor.set(rotationSpeed);
         driveMotor.set(calibrated.driveSpeed - DRIVE_WHILE_TURNING_CORRECTION * rotationSpeed);
-    }
-
-    public static double clamp(double x, double min, double max) {
-        if (x < min)
-            return min;
-        if (x > max)
-            return max;
-        return x;
     }
 
     public void stop() {

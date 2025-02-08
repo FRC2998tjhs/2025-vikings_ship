@@ -19,7 +19,7 @@ public class XboxControl implements Control {
         var maxSpeed = 0.4;
 
         var leftStick = new Vector2(controller.getLeftX(), -controller.getLeftY());
-        if (leftStick.getMagnitude() < 0.2) {
+        if (leftStick.getMagnitude() < 0.05) {
         leftStick = new Vector2();
         }
         leftStick = leftStick.multiply(maxSpeed);

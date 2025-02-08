@@ -2,10 +2,11 @@ package frc.robot;
 
 import org.dyn4j.geometry.Vector2;
 
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -13,6 +14,8 @@ public class Robot extends TimedRobot {
   AprilTags aprilTags = new AprilTags();
 
   XboxController controller = new XboxController(0);
+
+  SparkMax dumpMotor = new SparkMax(5, MotorType.kBrushless);
 
   SwerveModule frontRight = new SwerveModule(
       2, 2, 0,
@@ -35,8 +38,10 @@ public class Robot extends TimedRobot {
       .add(backRight, new Vector2(0.5, -0.6))
       .add(backLeft, new Vector2(-0.5, -0.6));
 
-  // Control control = new XboxControl(controller, swerves);
-  Control control = new FollowAprilTags(aprilTags, swerves);
+  Field field = Field.workshop;
+
+  Control control = new XboxControl(controller, swerves);
+  // Control control = new FollowAprilTags(aprilTags, swerves);
 
   @Override
   public void robotPeriodic() {
@@ -55,5 +60,8 @@ public class Robot extends TimedRobot {
     // }
     swerves.stop();
     control.teleopPeriodic();
+
+    var speed = controller.getRightTriggerAxis() + -controller.getLeftTriggerAxis();
+    dumpMotor.set(speed * 0.5);
   }
 }

@@ -17,17 +17,13 @@ public class SwerveMovement {
     }
 
     public void setDesiredState(Vector2 direction, double turn) {
-        turn = SwerveModule.clamp(turn, -1, 1);
+        turn = VikingMath.clamp(turn, -1, 1);
         var ccwTurn = -turn;
 
         var translationSpeed = direction.getMagnitude();
 
         var absTurn = Math.abs(ccwTurn);
         var totalSpeed = translationSpeed + absTurn;
-        if (totalSpeed < 0.05) {
-            stop();
-            return;
-        }
 
         for (var entry : moduleOffsets.entrySet()) {
             Vector2 offset = entry.getValue();
@@ -40,14 +36,9 @@ public class SwerveMovement {
                 wheel = wheel.divide(totalSpeed);
             }
 
-            var rotation = new Rotation2d(wheel.x, wheel.y);
+            var rotation = VikingMath.vecAngle(wheel);
             entry.getKey().setDesiredState(new SwerveModuleState(wheel.getMagnitude(), rotation));
         }
-    }
-
-    public static Rotation2d turnAngle(Vector2 offset, double turnSpeed) {
-        var rotate = turnSpeed >= 0. ? Rotation2d.kCCW_Pi_2 : Rotation2d.kCCW_Pi_2;
-        return new Rotation2d(offset.x, offset.y).plus(rotate);
     }
 
     public void stop() {
