@@ -1,17 +1,25 @@
 package frc.robot;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.dyn4j.geometry.Vector2;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.studica.frc.AHRS;
+import com.studica.frc.AHRS.NavXComType;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
-  AprilTags aprilTags = new AprilTags();
+  Camera frontCamera = new Camera(0, Camera.CameraType.LifeCam, new Transform3d());
+
+  AprilTags aprilTags = new AprilTags(Arrays.asList(frontCamera));
 
   XboxController controller = new XboxController(0);
 
@@ -40,6 +48,8 @@ public class Robot extends TimedRobot {
 
   Field field = Field.workshop;
 
+  RobotTransform transform = new RobotTransform(new AHRS(NavXComType.kUSB1), aprilTags, field);
+
   Control control = new XboxControl(controller, swerves);
   // Control control = new FollowAprilTags(aprilTags, swerves);
 
@@ -59,6 +69,8 @@ public class Robot extends TimedRobot {
     // return;
     // }
     swerves.stop();
+    transform.transform();
+
     control.teleopPeriodic();
 
     var speed = controller.getRightTriggerAxis() + -controller.getLeftTriggerAxis();
