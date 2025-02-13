@@ -9,6 +9,9 @@ public class XboxControl implements Control {
     private XboxController controller;
     private SwerveMovement swerves;
 
+    private double maxSpeed = 1.0;
+    private double deadzone = 0.1;
+
     public XboxControl(XboxController controller, SwerveMovement swerves) {
         this.controller = controller;
         this.swerves = swerves;
@@ -16,17 +19,15 @@ public class XboxControl implements Control {
 
     @Override
     public void teleopPeriodic() {
-        var maxSpeed = 0.4;
-
         var leftStick = new Vector2(controller.getLeftX(), -controller.getLeftY());
-        if (leftStick.getMagnitude() < 0.05) {
-        leftStick = new Vector2();
+        if (leftStick.getMagnitude() < deadzone) {
+            leftStick = new Vector2();
         }
         leftStick = leftStick.multiply(maxSpeed);
 
         var turnSpeed = controller.getRightX();
-        if (Math.abs(turnSpeed) < 0.1) {
-        turnSpeed = 0;
+        if (Math.abs(turnSpeed) < deadzone) {
+            turnSpeed = 0;
         }
         turnSpeed *= maxSpeed;
 
