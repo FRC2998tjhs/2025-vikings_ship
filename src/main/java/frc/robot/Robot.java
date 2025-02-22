@@ -9,14 +9,14 @@ import com.revrobotics.spark.SparkMax;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
-  Camera frontCamera = new Camera(0, Camera.CameraType.LifeCam, new Pose3d());
+  Camera frontCamera = new Camera(0, Camera.CameraType.Elp);
+  // Camera backCamera = new Camera(1, Camera.CameraType.LifeCam);
 
   AprilTags aprilTags = new AprilTags(Arrays.asList(frontCamera));
 
@@ -47,17 +47,16 @@ public class Robot extends TimedRobot {
 
   Field field = Field.workshop;
 
-  RobotTransform transform = new RobotTransform(new AHRS(NavXComType.kUSB1), Rotation2d.kCW_Pi_2, aprilTags, field);
+  RobotTransform transform = new RobotTransform(new AHRS(NavXComType.kUSB1));
 
   // Control control = new XboxControl(controller, swerves);
-  Control control = new FieldRelativeControl(controller, swerves, transform);
+  Control control = new FieldRelativeControl(controller, swerves, transform, frontCamera, frontCamera, aprilTags);
   // Control control = new FollowAprilTags(aprilTags, swerves);
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
   }
-
 
   @Override
   public void robotInit() {

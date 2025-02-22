@@ -24,4 +24,8 @@ public class AprilTagPose {
         var whichPose = pose.error1 < pose.error2 ? pose.pose1 : pose.pose2;
         return whichPose;
     }
+
+    public double centerXCameraSpace() {
+        return detection.getCenterX() / camera.getResolution().x;
+    }
 }

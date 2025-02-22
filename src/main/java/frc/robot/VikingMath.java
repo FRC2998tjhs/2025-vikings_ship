@@ -37,4 +37,17 @@ public class VikingMath {
         var scale = 1 / (1 - deadzone);
         return vec.multiply(scale);
     }
+
+    public static Rotation2d normalize(Rotation2d rot) {
+        var result = Rotation2d.fromDegrees(rot.getDegrees());
+
+        while (result.getDegrees() > 180) {
+            result = result.minus(Rotation2d.fromDegrees(360.));
+        }
+        while (result.getDegrees() <= -180) {
+            result = result.plus(Rotation2d.fromDegrees(360.));
+        }
+
+        return result;
+    }
 }
