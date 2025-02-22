@@ -20,4 +20,12 @@ public class VikingMath {
             return new Rotation2d(vec.x, vec.y);
         }
     }
+
+    public static Rotation2d controllerStickAngle(double x, double y, double deadzone) {
+        var vec = new Vector2(x, -y);
+        if (vec.getMagnitude() < deadzone) {
+            return null;
+        }
+        return new Rotation2d(vec.x, vec.y);
+    }
 }

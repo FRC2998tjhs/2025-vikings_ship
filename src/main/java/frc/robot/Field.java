@@ -11,7 +11,8 @@ public class Field {
         .withTag(15, new Vector3(-0.1778, -0.762, 0.8001))
         .withTag(16, new Vector3(2.2733, 3.1369, 0.78105))
         .withTag(17, new Vector3(2.9337, 1.5748, 0.7112))
-        .withTag(12, new Vector3(0.3937, 2.2225, 1.0414));
+        .withTag(12, new Vector3(0.3937, 2.2225, 1.0414))
+        .withTag(11, new Vector3(-0.25, -1.2, 1.4));
 
     // Will's Notes for AprilTag positions:
     // 1: Red Right

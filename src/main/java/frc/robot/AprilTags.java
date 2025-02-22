@@ -73,7 +73,7 @@ public class AprilTags {
                 for (AprilTagDetection detection : detections) {
                     everSeen.add((long) detection.getId());
                     var estimator = camera.getEstimator();
-                    seenThisFrame.add(AprilTagPose.fromDetection(detection, estimator));
+                    seenThisFrame.add(AprilTagPose.fromDetection(detection, camera));
 
                     outputDebug(estimator, mat, outlineColor, crossColor, tagsTable, detection);
                 }

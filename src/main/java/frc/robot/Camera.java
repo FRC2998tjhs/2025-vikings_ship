@@ -1,28 +1,31 @@
 package frc.robot;
 
+import org.dyn4j.geometry.Vector2;
+
 import edu.wpi.first.apriltag.AprilTagPoseEstimator;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator.Config;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.CvSink;
 import edu.wpi.first.cscore.CvSource;
 import edu.wpi.first.cscore.UsbCamera;
-import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Pose3d;
 
 public class Camera {
-    private Transform3d transform;
+    private Pose3d pose;
     private AprilTagPoseEstimator estimator;
 
     private CvSink cvSink;
     private CvSource debugStream;
 
-    public Camera(int deviceNumber, CameraType type, Transform3d transform) {
-        this.transform = transform;
+    public Camera(int deviceNumber, CameraType type, Pose3d pose) {
+        this.pose = pose;
         this.estimator = new AprilTagPoseEstimator(type.getConfig());
 
         UsbCamera usb = CameraServer.startAutomaticCapture(deviceNumber);
-        usb.setResolution(640, 480);
+        var resolution = new Vector2(640, 480);
+        usb.setResolution((int) resolution.x, (int) resolution.y);
         this.cvSink = CameraServer.getVideo();
-        this.debugStream = CameraServer.putVideo("Detected " + deviceNumber, 640, 480);
+        this.debugStream = CameraServer.putVideo("Detected " + deviceNumber, (int) resolution.x, (int) resolution.y);
     }
 
     public AprilTagPoseEstimator getEstimator() {
@@ -35,6 +38,10 @@ public class Camera {
 
     public CvSource debugStream() {
         return this.debugStream;
+    }
+
+    public Pose3d getPose() {
+        return this.pose;
     }
 
     public enum CameraType {

@@ -1,6 +1,5 @@
 package frc.robot;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.dyn4j.geometry.Vector2;
@@ -10,14 +9,14 @@ import com.revrobotics.spark.SparkMax;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
-  Camera frontCamera = new Camera(0, Camera.CameraType.LifeCam, new Transform3d());
+  Camera frontCamera = new Camera(0, Camera.CameraType.LifeCam, new Pose3d());
 
   AprilTags aprilTags = new AprilTags(Arrays.asList(frontCamera));
 
@@ -27,18 +26,18 @@ public class Robot extends TimedRobot {
 
   SwerveModule frontRight = new SwerveModule(
       2, 2, 0,
-      new SwerveCalibration(Rotation2d.fromDegrees(8), 1.0, false));
+      new SwerveCalibration(Rotation2d.fromDegrees(8.6), 1.0, false));
 
   SwerveModule frontLeft = new SwerveModule(
       3, 3, 1,
-      new SwerveCalibration(Rotation2d.fromDegrees(41.8), 1.0, false));
+      new SwerveCalibration(Rotation2d.fromDegrees(42.2), 1.0, false));
 
   SwerveModule backRight = new SwerveModule(
       1, 1, 2,
-      new SwerveCalibration(Rotation2d.fromDegrees(-68.2), 1.0, true));
+      new SwerveCalibration(Rotation2d.fromDegrees(-68.8), 1.0, false));
   SwerveModule backLeft = new SwerveModule(
       4, 4, 3,
-      new SwerveCalibration(Rotation2d.fromDegrees(-65.9), -1.0, true));
+      new SwerveCalibration(Rotation2d.fromDegrees(-65.8), -1.0, false));
 
   SwerveMovement swerves = new SwerveMovement()
       .add(frontRight, new Vector2(0.5, 0.6))
@@ -48,9 +47,10 @@ public class Robot extends TimedRobot {
 
   Field field = Field.workshop;
 
-  RobotTransform transform = new RobotTransform(new AHRS(NavXComType.kUSB1), aprilTags, field);
+  RobotTransform transform = new RobotTransform(new AHRS(NavXComType.kUSB1), Rotation2d.kCW_Pi_2, aprilTags, field);
 
-  Control control = new XboxControl(controller, swerves);
+  // Control control = new XboxControl(controller, swerves);
+  Control control = new FieldRelativeControl(controller, swerves, transform);
   // Control control = new FollowAprilTags(aprilTags, swerves);
 
   @Override
@@ -68,9 +68,8 @@ public class Robot extends TimedRobot {
     // if (true) {
     // return;
     // }
-    swerves.stop();
-    transform.transform();
 
+    // swerves.stop();
     control.teleopPeriodic();
 
     var speed = controller.getRightTriggerAxis() + -controller.getLeftTriggerAxis();
