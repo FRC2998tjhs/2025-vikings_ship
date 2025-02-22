@@ -58,7 +58,7 @@ public class RobotTransform {
         return robotRotation;
     }
 
-    public void setCurrentAsForward() {
-        this.gyroOffset = gyro.getRotation2d().plus(Rotation2d.kCW_90deg);
+    public void setCurrentAs(Rotation2d rotation) {
+        this.gyroOffset = gyro.getRotation2d().minus(rotation);
     }
 }

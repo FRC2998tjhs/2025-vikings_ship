@@ -1,7 +1,5 @@
 package frc.robot;
 
-import org.dyn4j.geometry.Vector2;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.XboxController;
@@ -24,7 +22,7 @@ public class FieldRelativeControl implements Control {
 
     public void teleopPeriodic() {
         if (controller.getYButton()) {
-            transform.setCurrentAsForward();
+            transform.setCurrentAs(Rotation2d.kCCW_90deg);
         }
 
         Rotation2d measured = transform.getRotation();
@@ -33,9 +31,9 @@ public class FieldRelativeControl implements Control {
         var error = target.minus(measured);
         double turn = target == null ? 0 : turningPid.calculate(error.getDegrees(), 0);
 
-        // System.out.println("Target:   " + target);
-        // System.out.println("Measured: " + measured);
-        // System.out.println("Would turn: " + turn);
-        swerves.setDesiredState(new Vector2(), turn);
+        var movementInput = VikingMath.controllerStickVector(controller.getLeftX(), controller.getLeftY(), 0.15);
+        var movement = movementInput.rotate(measured.minus(Rotation2d.kCCW_90deg).times(-1).getRadians());
+
+        swerves.setDesiredState(movement.multiply(0.2), turn);
     }
 }

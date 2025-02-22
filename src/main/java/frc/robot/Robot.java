@@ -58,6 +58,12 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
   }
 
+
+  @Override
+  public void robotInit() {
+    transform.setCurrentAs(Rotation2d.kCCW_90deg);
+  }
+
   @Override
   public void teleopPeriodic() {
     // System.out.println();
