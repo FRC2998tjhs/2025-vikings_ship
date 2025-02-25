@@ -1,5 +1,7 @@
 package frc.robot;
 
+import org.dyn4j.geometry.Vector2;
+
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -27,5 +29,11 @@ public class AprilTagPose {
 
     public double centerXCameraSpace() {
         return detection.getCenterX() / camera.getResolution().x;
+    }
+
+    public Vector2 centerCameraSpace() {
+        return new Vector2(detection.getCenterX() / camera.getResolution().x,
+                detection.getCenterY() / camera.getResolution().y);
+
     }
 }

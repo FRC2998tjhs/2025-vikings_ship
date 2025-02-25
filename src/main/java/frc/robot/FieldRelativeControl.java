@@ -15,15 +15,16 @@ import edu.wpi.first.wpilibj.XboxController;
 
 public class FieldRelativeControl implements Control {
 
-    private static final double CORAL_WIDTH = 0.3048;
     private XboxController controller;
     private SwerveMovement swerves;
     private RobotTransform transform;
 
-    private PIDController turningPid;
     private Camera frontCamera;
     private Camera backCamera;
     private AprilTags aprilTags;
+
+    private PIDController turningPid;
+    private PIDController orientPid;
 
     private final double maxSpeed = 0.4;
 
@@ -37,6 +38,7 @@ public class FieldRelativeControl implements Control {
         this.aprilTags = aprilTags;
 
         this.turningPid = new PIDController(0.005, 0, 0);
+        this.orientPid = new PIDController(1.5, 0.2, 0);
     }
 
     public void teleopPeriodic() {
@@ -48,24 +50,25 @@ public class FieldRelativeControl implements Control {
                 .map(i -> i * 60 + 30)
                 .mapToObj(angle -> VikingMath.normalize(Rotation2d.fromDegrees(angle)));
         if (controller.getXButton()) {
-            alignToAprilTag(0.7, frontCamera, sixties);
+            alignToAprilTag(new Vector2(0.7, 0.85), frontCamera, sixties);
             return;
         }
         if (controller.getBButton()) {
-            alignToAprilTag(0.3, frontCamera, sixties);
+            alignToAprilTag(new Vector2(0.3, 0.85), frontCamera, sixties);
             return;
         }
         if (controller.getAButton()) {
             var fortyFives = IntStream.iterate(0, i -> i * 90 + 45)
                     .mapToObj(angle -> Rotation2d.fromDegrees(angle))
                     .limit(4);
-            alignToAprilTag(0.5, backCamera, fortyFives);
+            alignToAprilTag(new Vector2(0.5, 0.1), backCamera, fortyFives);
             return;
         }
-        // alignToAprilTag(0, frontCamera);
-        // if (true)
-        // return;
 
+        controllerMovement();
+    }
+
+    private void controllerMovement() {
         Rotation2d measured = transform.getRotation();
 
         var movement = movementInput().rotate(measured.minus(Rotation2d.kCCW_90deg).times(-1).getRadians());
@@ -88,26 +91,28 @@ public class FieldRelativeControl implements Control {
         return turningPid.calculate(error.getDegrees(), 0);
     }
 
-    private void alignToAprilTag(double centerAt, Camera camera, Stream<Rotation2d> angles) {
+    private void alignToAprilTag(Vector2 centerAt, Camera camera, Stream<Rotation2d> angles) {
         var detection = aprilTags.seen().stream().filter(d -> d.camera == camera).findAny();
 
-        var x = detection.map(d -> {
-            var cameraX = d.centerXCameraSpace();
-            return (cameraX - centerAt) * 2 * maxSpeed * 0.5;
-        }).orElse((double) 0);
+        detection.ifPresent(d -> {
+            var detectionCenter = d.centerCameraSpace();
+            var error = new Vector2(
+                    centerAt.x - detectionCenter.x,
+                    detectionCenter.y - centerAt.y);
+            var multiplyBy = orientPid.calculate(error.getMagnitude(), 0);
+            var movement = error.multiply(multiplyBy);
 
-        var movement = new Vector2(x, movementInput().y);
+            var measured = VikingMath.normalize(transform.getRotation());
+            var angleWithLeastError = angles.min(Comparator.comparing(a -> {
+                return Math.abs(a.minus(measured).getDegrees());
+            }));
+            var turn = angleWithLeastError.map(a -> a.minus(measured).getDegrees() * -0.01).orElse((double) 0);
 
-        var measured = VikingMath.normalize(transform.getRotation());
-        var angleWithLeastError = angles.min(Comparator.comparing(a -> {
-            System.out.println(a.getDegrees());
-            return Math.abs(a.minus(measured).getDegrees());
-        }));
-        System.out.println("");
-        System.out.println(measured.getDegrees());
-        System.out.println(angleWithLeastError.map(a -> a.getDegrees()));
-        var turn = angleWithLeastError.map(a -> a.minus(measured).getDegrees() * -0.01).orElse((double) 0);
+            swerves.setDesiredState(movement, turn);
+        });
 
-        swerves.setDesiredState(movement, turn);
+        if (detection.isEmpty()) {
+            controllerMovement();
+        }
     }
 }
