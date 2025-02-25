@@ -42,7 +42,7 @@ public class Robot extends TimedRobot {
       4, 4, 3,
       new SwerveCalibration(Rotation2d.fromDegrees(-65.8), -1.0, false));
 
-  SwerveMovement swerves = new SwerveMovement()
+  RobotRelativeMovement robotRelative = new RobotRelativeMovement()
       .add(frontRight, new Vector2(0.5, 0.6))
       .add(frontLeft, new Vector2(-0.5, 0.6))
       .add(backRight, new Vector2(0.5, -0.6))
@@ -52,9 +52,9 @@ public class Robot extends TimedRobot {
 
   RobotTransform transform = new RobotTransform(new AHRS(NavXComType.kUSB1));
 
-  // Control control = new XboxControl(controller, swerves);
-  Control control = new FieldRelativeControl(controller, swerves, transform, frontCamera, backCamera, aprilTags);
-  // Control control = new FollowAprilTags(aprilTags, swerves);
+  FieldRelativeMovement fieldRelative = new FieldRelativeMovement(robotRelative, transform, aprilTags, frontCamera,
+      backCamera);
+  Control control = new Control(controller, fieldRelative, dumpMotor);
 
   @Override
   public void robotPeriodic() {
@@ -77,10 +77,6 @@ public class Robot extends TimedRobot {
     // return;
     // }
 
-    // swerves.stop();
     control.teleopPeriodic();
-
-    var speed = controller.getRightTriggerAxis() + -controller.getLeftTriggerAxis();
-    dumpMotor.set(speed * 0.5);
   }
 }

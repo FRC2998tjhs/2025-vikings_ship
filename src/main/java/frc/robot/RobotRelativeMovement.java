@@ -8,10 +8,10 @@ import org.dyn4j.geometry.Vector2;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 
-public class SwerveMovement {
+public class RobotRelativeMovement {
     private Map<SwerveModule, Vector2> moduleOffsets = new HashMap<SwerveModule, Vector2>();
 
-    public SwerveMovement add(SwerveModule module, Vector2 offset) {
+    public RobotRelativeMovement add(SwerveModule module, Vector2 offset) {
         this.moduleOffsets.put(module, offset);
         return this;
     }
