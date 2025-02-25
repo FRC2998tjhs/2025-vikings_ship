@@ -12,10 +12,6 @@ import org.opencv.imgproc.Imgproc;
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagDetector;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator;
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.CvSink;
-import edu.wpi.first.cscore.CvSource;
-import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.IntegerArrayPublisher;
@@ -44,12 +40,7 @@ public class AprilTags {
         var detector = new AprilTagDetector();
         detector.addFamily("tag36h11", 1);
 
-        var mat = new Mat();
-        var grayMat = new Mat();
-
         ArrayList<Long> everSeen = new ArrayList<>();
-        var outlineColor = new Scalar(0, 255, 0);
-        var crossColor = new Scalar(0, 0, 255);
 
         NetworkTable tagsTable = NetworkTableInstance.getDefault().getTable("apriltags");
         IntegerArrayPublisher pubTags = tagsTable.getIntegerArrayTopic("tags").publish();
@@ -59,13 +50,15 @@ public class AprilTags {
             everSeen.clear();
 
             for (var camera : this.cameras) {
-                var sink = camera.getCvSink();
+                var mat = camera.getMat();
 
+                var sink = camera.getCvSink();
                 if (sink.grabFrame(mat) == 0) {
                     camera.debugStream().notifyError(sink.getError());
                     continue;
                 }
 
+                var grayMat = camera.getGrayMat();
                 Imgproc.cvtColor(mat, grayMat, Imgproc.COLOR_RGB2GRAY);
 
                 AprilTagDetection[] detections = detector.detect(grayMat);
@@ -75,7 +68,7 @@ public class AprilTags {
                     var estimator = camera.getEstimator();
                     seenThisFrame.add(AprilTagPose.fromDetection(detection, camera));
 
-                    outputDebug(estimator, mat, outlineColor, crossColor, tagsTable, detection);
+                    outputDebug(estimator, mat, tagsTable, detection);
                 }
 
                 camera.debugStream().putFrame(mat);
@@ -94,8 +87,10 @@ public class AprilTags {
         detector.close();
     }
 
-    private void outputDebug(AprilTagPoseEstimator estimator, Mat mat, Scalar outlineColor, Scalar crossColor,
-            NetworkTable tagsTable, AprilTagDetection detection) {
+    private void outputDebug(AprilTagPoseEstimator estimator, Mat mat, NetworkTable tagsTable, AprilTagDetection detection) {
+        var outlineColor = new Scalar(0, 255, 0);
+        var crossColor = new Scalar(0, 0, 255);
+
         // draw lines around the tag
         for (var i = 0; i <= 3; i++) {
             var j = (i + 1) % 4;

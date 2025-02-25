@@ -1,13 +1,10 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Rotation;
-
 import java.util.Comparator;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.dyn4j.geometry.Vector2;
-import org.dyn4j.geometry.Vector3;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;

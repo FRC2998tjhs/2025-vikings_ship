@@ -15,10 +15,13 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
-  Camera frontCamera = new Camera(0, Camera.CameraType.Elp);
-  // Camera backCamera = new Camera(1, Camera.CameraType.LifeCam);
+  Camera frontCamera = new Camera(1, "Front", Camera.CameraType.Elp);
+  // Camera backCamera = new Camera(0, "Back", Camera.CameraType.Elp);
 
-  AprilTags aprilTags = new AprilTags(Arrays.asList(frontCamera));
+  // Camera frontCamera = backCamera;
+  Camera backCamera = frontCamera;
+
+  AprilTags aprilTags = new AprilTags(Arrays.asList(frontCamera, backCamera));
 
   XboxController controller = new XboxController(0);
 
@@ -50,7 +53,7 @@ public class Robot extends TimedRobot {
   RobotTransform transform = new RobotTransform(new AHRS(NavXComType.kUSB1));
 
   // Control control = new XboxControl(controller, swerves);
-  Control control = new FieldRelativeControl(controller, swerves, transform, frontCamera, frontCamera, aprilTags);
+  Control control = new FieldRelativeControl(controller, swerves, transform, frontCamera, backCamera, aprilTags);
   // Control control = new FollowAprilTags(aprilTags, swerves);
 
   @Override

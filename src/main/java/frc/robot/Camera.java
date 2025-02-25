@@ -1,6 +1,7 @@
 package frc.robot;
 
 import org.dyn4j.geometry.Vector2;
+import org.opencv.core.Mat;
 
 import edu.wpi.first.apriltag.AprilTagPoseEstimator;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator.Config;
@@ -14,17 +15,21 @@ public class Camera {
 
     private CvSink cvSink;
     private CvSource debugStream;
+    private Mat mat;
+    private Mat grayMat;
 
     private Vector2 resolution;
 
-    public Camera(int deviceNumber, CameraType type) {
+    public Camera(int deviceNumber, String name, CameraType type) {
         this.estimator = new AprilTagPoseEstimator(type.getConfig());
+        this.resolution = new Vector2(620, 480);
 
         UsbCamera usb = CameraServer.startAutomaticCapture(deviceNumber);
-        this.resolution = new Vector2(640, 480);
         usb.setResolution((int) resolution.x, (int) resolution.y);
-        this.cvSink = CameraServer.getVideo();
-        this.debugStream = CameraServer.putVideo("Detected " + deviceNumber, (int) resolution.x, (int) resolution.y);
+        usb.setFPS(1);
+
+        this.cvSink = CameraServer.getVideo(usb);
+        this.debugStream = CameraServer.putVideo("Detected " + name, (int) resolution.x, (int) resolution.y);
     }
 
     public AprilTagPoseEstimator getEstimator() {
@@ -43,6 +48,13 @@ public class Camera {
         return this.resolution;
     }
 
+    public Mat getMat() {
+        if (this.mat == null) {
+            this.mat = new Mat();
+        }
+        return this.mat;
+    }
+
     public enum CameraType {
         LifeCam, Elp;
 
@@ -59,5 +71,12 @@ public class Camera {
                     throw new Error("Unknown config for " + this);
             }
         }
+    }
+
+    public Mat getGrayMat() {
+        if (this.grayMat == null) {
+            this.grayMat = new Mat();
+        }
+        return this.grayMat;
     }
 }
