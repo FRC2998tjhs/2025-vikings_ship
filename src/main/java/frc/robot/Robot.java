@@ -13,8 +13,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 public class Robot extends TimedRobot {
+  private static final boolean DO_CALIBRATION = false;
+
   Camera frontCamera = new Camera(1, "Front", Camera.CameraType.Elp);
   // Camera backCamera = new Camera(0, "Back", Camera.CameraType.Elp);
 
@@ -63,19 +66,39 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    transform.setCurrentAs(Rotation2d.kCCW_90deg);
+    fieldRelative.setForward();
+  }
+
+  @Override
+  public void autonomousInit() {
+    fieldRelative.setForward();
+
+    var getToReef = Commands.idle().until(() -> {
+      var error = fieldRelative.alignToRightOfReef();
+      if (error.isPresent()) {
+        return error.get() < 0.03;
+      }
+
+      fieldRelative.setDesiredState(new Vector2(0, 0.1), null);
+      return false;
+    }).withDeadline(Commands.waitSeconds(5)).finallyDo(() -> fieldRelative.stop());
+
+    var dump = Commands.run(() -> dumpMotor.set(0.3)).withDeadline(Commands.waitSeconds(1))
+        .finallyDo(() -> dumpMotor.set(0));
+
+    Commands.sequence(getToReef, Commands.waitSeconds(0.5), dump).schedule();
   }
 
   @Override
   public void teleopPeriodic() {
-    // System.out.println();
-    // frontRight.calibrate("Front Right");
-    // frontLeft.calibrate("Front Left");
-    // backRight.calibrate("Back Right");
-    // backLeft.calibrate("Back Left");
-    // if (true) {
-    // return;
-    // }
+    if (DO_CALIBRATION) {
+      System.out.println();
+      frontRight.calibrate("Front Right");
+      frontLeft.calibrate("Front Left");
+      backRight.calibrate("Back Right");
+      backLeft.calibrate("Back Left");
+      return;
+    }
 
     control.teleopPeriodic();
   }

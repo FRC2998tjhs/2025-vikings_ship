@@ -32,6 +32,7 @@ public class FieldRelativeMovement {
 
     public void setDesiredState(Vector2 movementInput, Rotation2d direction) {
         Rotation2d measured = transform.getRotation();
+        System.out.println("Measured: " + measured);
 
         var movement = movementInput.rotate(measured.minus(Rotation2d.kCCW_90deg).times(-1).getRadians());
 
@@ -66,7 +67,7 @@ public class FieldRelativeMovement {
         var error = new Vector2(
                 centerAt.x - detectionCenter.x,
                 detectionCenter.y - centerAt.y);
-        var multiplyBy = orientPid.calculate(error.getMagnitude(), 0);
+        var multiplyBy = VikingMath.clamp(orientPid.calculate(error.getMagnitude(), 0), -0.3, 0.3);
         var movement = error.multiply(multiplyBy);
 
         moveAndOrient(movement, angles);
@@ -96,5 +97,9 @@ public class FieldRelativeMovement {
                 .mapToObj(angle -> Rotation2d.fromDegrees(angle))
                 .limit(4);
         return alignToAprilTag(new Vector2(0.5, 0.1), backCamera, fortyFives);
+    }
+
+    public void stop() {
+        robotRelative.stop();
     }
 }
