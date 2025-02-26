@@ -1,14 +1,16 @@
 package frc.robot;
 
+import org.dyn4j.geometry.Vector2;
+
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.wpilibj.XboxController;
+import frc.robot.FieldRelativeMovement.Alignment;
 
 public class Control {
     private XboxController controller;
     private FieldRelativeMovement fieldRelative;
 
-    private double maxSpeed = 0.5;
     private SparkMax dumpMotor;
 
     public Control(XboxController controller, FieldRelativeMovement fieldRelative, SparkMax dumpMotor) {
@@ -23,34 +25,48 @@ public class Control {
         }
 
         if (controller.getRightBumperButton()) {
-            dumpMotor.set(0.3);
+            dumpMotor.set(Tunable.dumpSpeed);
         } else if (controller.getLeftBumperButton()) {
-            dumpMotor.set(-0.3);
+            dumpMotor.set(-Tunable.dumpSpeed);
         } else {
             dumpMotor.set(0);
         }
 
-        var aligned = false;
         if (controller.getXButton()) {
-            aligned = fieldRelative.alignToLeftOfReef().isPresent();
+            alignToReef(fieldRelative.leftOfReef);
+            return;
         }
         if (controller.getBButton()) {
-            aligned = fieldRelative.alignToRightOfReef().isPresent();
+            alignToReef(fieldRelative.rightOfReef);
+            return;
         }
         if (controller.getAButton()) {
-            aligned = fieldRelative.alignToPickup().isPresent();
-        }
-
-        if (aligned) {
+            fieldRelative.alignTo(fieldRelative.pickup, movement()).isPresent();
             return;
         }
 
         controllerMovement();
     }
 
+    private void alignToReef(Alignment alignment) {
+        var error = fieldRelative.alignTo(alignment, movement());
+        if (error.isPresent() && error.get() < Tunable.atReefError) {
+            dumpMotor.set(Tunable.dumpSpeed);
+        } else {
+            dumpMotor.set(-Tunable.dumpSpeed);
+        }
+    }
+
     private void controllerMovement() {
-        var movement = VikingMath.controllerStickVector(controller.getLeftX(), controller.getLeftY(), 0.15);
-        var angle = VikingMath.controllerStickAngle(controller.getRightX(), controller.getRightY(), 0.8);
-        fieldRelative.setDesiredState(movement.multiply(maxSpeed), angle);
+        var angle = VikingMath.controllerStickAngle(controller.getRightX(), controller.getRightY(),
+                Tunable.rightStickAngleDeadzone);
+
+        fieldRelative.setDesiredState(movement(), angle);
+    }
+
+    private Vector2 movement() {
+        var movementInput = VikingMath.controllerStickVector(controller.getLeftX(), controller.getLeftY(),
+                Tunable.leftStickDeadzone);
+        return movementInput.multiply(Tunable.controlMaxSpeed);
     }
 }

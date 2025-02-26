@@ -34,8 +34,8 @@ public class VikingMath {
         if (vec.getMagnitude() < deadzone) {
             return new Vector2();
         }
-        var scale = 1 / (1 - deadzone);
-        return vec.multiply(scale);
+        var scaled = vec.multiply(1 / (1 - deadzone));
+        return scaled.multiply(Math.pow(scaled.getMagnitude(), Tunable.stickExponent));
     }
 
     public static Rotation2d normalize(Rotation2d rot) {

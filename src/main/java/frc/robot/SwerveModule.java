@@ -28,7 +28,7 @@ public class SwerveModule {
         this.turningMotor = new SparkMax(turningMotorPort, MotorType.kBrushless);
         this.absoluteEncoder = new AnalogInput(absoluteEncoderPort);
 
-        this.turningPid = new PIDController(.01, 0., 0.);
+        this.turningPid = new PIDController(0.01, 0., 0.);
     }
 
     public Rotation2d currentRotationReading() {

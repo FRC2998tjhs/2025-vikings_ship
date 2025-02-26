@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 public class Robot extends TimedRobot {
   private static final boolean DO_CALIBRATION = false;
 
-  Camera frontCamera = new Camera(1, "Front", Camera.CameraType.Elp);
+  Camera frontCamera = new Camera(0, "Front", Camera.CameraType.Elp);
   // Camera backCamera = new Camera(0, "Back", Camera.CameraType.Elp);
 
   // Camera frontCamera = backCamera;
@@ -73,20 +73,19 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     fieldRelative.setForward();
 
-    var getToReef = Commands.idle().until(() -> {
-      var error = fieldRelative.alignToRightOfReef();
-      if (error.isPresent()) {
-        return error.get() < 0.03;
-      }
+    var getToReef = Commands.idle()
+        .until(() -> {
+          var error = fieldRelative.alignTo(fieldRelative.leftOfReef, new Vector2(0, Tunable.autoMoveSpeed));
+          return error.map(e -> e < Tunable.atReefError).orElse(false);
+        })
+        .withDeadline(Commands.waitSeconds(5))
+        .finallyDo(() -> fieldRelative.stop());
 
-      fieldRelative.setDesiredState(new Vector2(0, 0.1), null);
-      return false;
-    }).withDeadline(Commands.waitSeconds(5)).finallyDo(() -> fieldRelative.stop());
-
-    var dump = Commands.run(() -> dumpMotor.set(0.3)).withDeadline(Commands.waitSeconds(1))
+    var dump = Commands.run(() -> dumpMotor.set(0.3))
+        .withDeadline(Commands.waitSeconds(1))
         .finallyDo(() -> dumpMotor.set(0));
 
-    Commands.sequence(getToReef, Commands.waitSeconds(0.5), dump).schedule();
+    Commands.sequence(getToReef, Commands.waitSeconds(0.2), dump).schedule();
   }
 
   @Override
