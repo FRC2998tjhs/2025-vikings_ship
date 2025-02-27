@@ -19,4 +19,7 @@ public class Tunable {
 
     public static final double controlMaxSpeed = 0.5;
     public static final double stickExponent = 1.2;
+
+    public static final double movementAcceleration = 1.0;
+    public static final double turningAcceleration = 1.0;
 }

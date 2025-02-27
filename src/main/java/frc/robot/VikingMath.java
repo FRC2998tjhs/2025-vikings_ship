@@ -50,4 +50,11 @@ public class VikingMath {
 
         return result;
     }
+
+    public static Vector2 clampVec(Vector2 vec, double maxMag) {
+        if (vec.getMagnitude() <= maxMag) {
+            return vec;
+        }
+        return vec.multiply(maxMag / vec.getMagnitude());
+    }
 }
