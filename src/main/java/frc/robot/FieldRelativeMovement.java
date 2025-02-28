@@ -37,15 +37,19 @@ public class FieldRelativeMovement {
     public void setDesiredState(Vector2 movementInput, Rotation2d direction) {
         Rotation2d measured = transform.getRotation();
 
-        var movement = movementInput.rotate(measured.minus(Rotation2d.kCCW_90deg).times(-1).getRadians());
-
         double turn = 0;
         if (direction != null) {
             var error = direction.minus(measured);
             turn = turningPid.calculate(error.getDegrees(), 0);
         }
 
-        robotRelative.setDesiredState(movement, turn);
+        robotRelative.setDesiredState(robotMovement(movementInput), turn);
+    }
+
+    private Vector2 robotMovement(Vector2 fieldMovement) {
+        Rotation2d measured = transform.getRotation();
+
+        return fieldMovement.rotate(measured.minus(Rotation2d.kCCW_90deg).times(-1).getRadians());
     }
 
     public Optional<Double> alignTo(Alignment alignment,
@@ -68,7 +72,7 @@ public class FieldRelativeMovement {
                 detectionCenter.y - alignment.cameraTarget.y);
         var multiplyBy = VikingMath.clamp(orientPid.calculate(error.getMagnitude(), 0),
                 -Tunable.maxAlignToAprilTagTurnSpeed, Tunable.maxAlignToAprilTagTurnSpeed);
-        var movement = error.multiply(multiplyBy);
+        var movement = error.copy().multiply(multiplyBy);
 
         var turn = angleWithLeastError.map(a -> a.minus(measured).getDegrees() * -0.01).orElse((double) 0);
 
@@ -76,8 +80,16 @@ public class FieldRelativeMovement {
         return Optional.of(error.getMagnitude());
     }
 
+    public void turnRelative(Vector2 movement, double turn) {
+        robotRelative.setDesiredState(robotMovement(movement), turn);
+    }
+
     public void setForward() {
         transform.setCurrentAs(Rotation2d.kCCW_90deg);
+    }
+
+    public void setBackward() {
+        transform.setCurrentAs(Rotation2d.kCW_90deg);
     }
 
     public void stop() {
@@ -103,5 +115,9 @@ public class FieldRelativeMovement {
                     .takeWhile(angle -> angle.getDegrees() < 360)
                     .map(angle -> VikingMath.normalize(angle));
         }
+    }
+
+    public void rotateToBackward() {
+        setDesiredState(new Vector2(), Rotation2d.kCW_90deg);
     }
 }

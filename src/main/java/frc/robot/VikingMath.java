@@ -31,11 +31,8 @@ public class VikingMath {
 
     public static Vector2 controllerStickVector(double x, double y, double deadzone) {
         var vec = new Vector2(x, -y);
-        if (vec.getMagnitude() < deadzone) {
-            return new Vector2();
-        }
-        var scaled = vec.multiply(1 / (1 - deadzone));
-        return scaled.multiply(Math.pow(scaled.getMagnitude(), Tunable.stickExponent));
+        var scale = deadzoneExponent(vec.getMagnitude(), deadzone, Tunable.stickExponent);
+        return vec.multiply(scale);
     }
 
     public static Rotation2d normalize(Rotation2d rot) {
@@ -56,5 +53,12 @@ public class VikingMath {
             return vec;
         }
         return vec.multiply(maxMag / vec.getMagnitude());
+    }
+
+    public static double deadzoneExponent(double x, double deadzone, double exponent) {
+        if (Math.abs(x) > deadzone) {
+            x = (x - deadzone) / (1 - deadzone);
+        }
+        return x * Math.pow(Math.abs(x), exponent);
     }
 }

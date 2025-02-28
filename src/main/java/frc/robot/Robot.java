@@ -10,8 +10,12 @@ import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 
@@ -57,7 +61,13 @@ public class Robot extends TimedRobot {
 
   FieldRelativeMovement fieldRelative = new FieldRelativeMovement(robotRelative, transform, aprilTags, frontCamera,
       backCamera);
-  Control control = new Control(controller, fieldRelative, dumpMotor);
+
+  int solenoidModuleCan = 7;
+  PneumaticsModuleType pneumaticsType = PneumaticsModuleType.CTREPCM;
+  Lifting lifting = new Lifting(new Solenoid(solenoidModuleCan, pneumaticsType, 1),
+      new Solenoid(solenoidModuleCan, pneumaticsType, 0), new Solenoid(solenoidModuleCan, pneumaticsType, 2));
+
+  Control control = new Control(controller, fieldRelative, dumpMotor, lifting);
 
   @Override
   public void robotPeriodic() {
@@ -66,26 +76,14 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    fieldRelative.setForward();
+    fieldRelative.setBackward();
+    // lifting.onStart();
   }
 
   @Override
   public void autonomousInit() {
-    fieldRelative.setForward();
-
-    var getToReef = Commands.idle()
-        .until(() -> {
-          var error = fieldRelative.alignTo(fieldRelative.leftOfReef, new Vector2(0, Tunable.autoMoveSpeed));
-          return error.map(e -> e < Tunable.atReefError).orElse(false);
-        })
-        .withDeadline(Commands.waitSeconds(5))
-        .finallyDo(() -> fieldRelative.stop());
-
-    var dump = Commands.run(() -> dumpMotor.set(0.3))
-        .withDeadline(Commands.waitSeconds(1))
-        .finallyDo(() -> dumpMotor.set(0));
-
-    Commands.sequence(getToReef, Commands.waitSeconds(0.2), dump).schedule();
+    fieldRelative.setBackward();
+    new Autonomous(fieldRelative, dumpMotor).command().schedule();
   }
 
   @Override
@@ -98,6 +96,19 @@ public class Robot extends TimedRobot {
       backLeft.calibrate("Back Left");
       return;
     }
+
+    // if (controller.getLeftBumperButton()) {
+    // left.set(Value.kForward);
+    // }
+    // if (controller.getRightBumperButton()) {
+    // left.set(Value.kReverse);
+    // }
+    // if (controller.getYButton()) {
+    // left.set(Value.kOff);
+    // }
+    // left.set(controller.getLeftBumperButton());
+    // lifting.right.set(controller.getRightBumperButton());
+    // lifting.rear.set(controller.getYButton());
 
     control.teleopPeriodic();
   }

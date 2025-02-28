@@ -20,4 +20,8 @@ public class RobotTransform {
     public void setCurrentAs(Rotation2d rotation) {
         this.gyroOffset = gyro.getRotation2d().minus(rotation);
     }
+
+    public void resetGyro() {
+        this.gyro.reset();
+    }
 }
