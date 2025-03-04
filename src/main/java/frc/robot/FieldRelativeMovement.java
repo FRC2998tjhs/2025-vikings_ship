@@ -12,7 +12,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 
 public class FieldRelativeMovement {
     private RobotRelativeMovement robotRelative;
-    private RobotTransform transform;
+    private Kinematics kinematics;
     private AprilTags aprilTags;
 
     private PIDController turningPid = new PIDController(0.005, 0, 0);
@@ -22,20 +22,23 @@ public class FieldRelativeMovement {
     public Alignment rightOfReef;
     public Alignment pickup;
 
-    public FieldRelativeMovement(RobotRelativeMovement robotRelative, RobotTransform transform, AprilTags aprilTags,
+    private Kinematics.Velocity velocity;
+
+    public FieldRelativeMovement(RobotRelativeMovement robotRelative, Kinematics kinematics, AprilTags aprilTags,
             Camera frontCamera, Camera backCamera) {
         this.robotRelative = robotRelative;
-        this.transform = transform;
+        this.kinematics = kinematics;
         this.aprilTags = aprilTags;
 
         this.leftOfReef = new Alignment(Tunable.leftOfReefAprilTagInCamera, frontCamera, 30, 60);
         this.rightOfReef = new Alignment(Tunable.rightOfReefAprilTagInCamera, frontCamera, 30, 60);
         this.pickup = new Alignment(Tunable.pickupAprilTagCamera, backCamera, 45, 90);
 
+        this.velocity = kinematics.new Velocity();
     }
 
     public void setDesiredState(Vector2 movementInput, Rotation2d direction) {
-        Rotation2d measured = transform.getRotation();
+        Rotation2d measured = kinematics.rotation();
 
         double turn = 0;
         if (direction != null) {
@@ -43,21 +46,24 @@ public class FieldRelativeMovement {
             turn = turningPid.calculate(error.getDegrees(), 0);
         }
 
-        // System.out.println(movementInput);
         Vector2 robotMovement = robotMovement(movementInput);
-        // System.out.println(robotMovement);
-        robotRelative.setDesiredState(robotMovement, turn);
+        setRobotRelativeState(robotMovement, turn);
+    }
+
+    private void setRobotRelativeState(Vector2 robotMovement, double turn) {
+        this.velocity = this.velocity.accelerate(robotMovement, turn);
+        robotRelative.setDesiredState(this.velocity.direction, this.velocity.turn);
     }
 
     private Vector2 robotMovement(Vector2 fieldMovement) {
-        Rotation2d measured = transform.getRotation();
+        Rotation2d measured = kinematics.rotation();
 
         return fieldMovement.rotate(measured.minus(Rotation2d.kCCW_90deg).times(-1).getRadians());
     }
 
     public Optional<Double> alignTo(Alignment alignment,
             Vector2 otherwiseMove) {
-        var measured = VikingMath.normalize(transform.getRotation());
+        var measured = VikingMath.normalize(kinematics.rotation());
         var angleWithLeastError = alignment.angles().min(Comparator.comparing(a -> {
             return Math.abs(a.minus(measured).getDegrees());
         }));
@@ -79,7 +85,7 @@ public class FieldRelativeMovement {
 
         var turn = angleWithLeastError.map(a -> a.minus(measured).getDegrees() * -0.01).orElse((double) 0);
 
-        robotRelative.setDesiredState(movement, turn);
+        setRobotRelativeState(movement, turn);
         return Optional.of(error.getMagnitude());
     }
 
@@ -88,11 +94,11 @@ public class FieldRelativeMovement {
     }
 
     public void setForward() {
-        transform.setCurrentAs(Rotation2d.kCCW_90deg);
+        kinematics.setCurrentAs(Rotation2d.kCCW_90deg);
     }
 
     public void setBackward() {
-        transform.setCurrentAs(Rotation2d.kCW_90deg);
+        kinematics.setCurrentAs(Rotation2d.kCW_90deg);
     }
 
     public void stop() {

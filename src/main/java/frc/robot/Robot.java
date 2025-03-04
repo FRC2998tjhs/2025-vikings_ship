@@ -15,11 +15,7 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
-
-import frc.robot.Control;
 
 public class Robot extends TimedRobot {
   private static final boolean DO_CALIBRATION = false;
@@ -59,7 +55,7 @@ public class Robot extends TimedRobot {
 
   Field field = Field.workshop;
 
-  RobotTransform transform = new RobotTransform(new AHRS(NavXComType.kUSB1));
+  Kinematics transform = new Kinematics(new AHRS(NavXComType.kUSB1));
 
   FieldRelativeMovement fieldRelative = new FieldRelativeMovement(robotRelative, transform, aprilTags, frontCamera,
       backCamera);
@@ -67,9 +63,7 @@ public class Robot extends TimedRobot {
   int solenoidModuleCan = 7;
   PneumaticsModuleType pneumaticsType = PneumaticsModuleType.CTREPCM;
   Lifting lifting = new Lifting(
-    // null,
     new Solenoid(solenoidModuleCan, pneumaticsType, 1),
-    // null,
     new Solenoid(solenoidModuleCan, pneumaticsType, 0),
     new DoubleSolenoid(solenoidModuleCan, pneumaticsType, 4, 5)
   );
@@ -83,8 +77,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    // fieldRelative.setBackward();
-    fieldRelative.setForward();
+    fieldRelative.setBackward();
+    // fieldRelative.setForward();
   }
 
   @Override

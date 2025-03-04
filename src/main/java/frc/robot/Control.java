@@ -6,7 +6,6 @@ import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import frc.robot.FieldRelativeMovement.Alignment;
 
 public class Control {
@@ -14,15 +13,15 @@ public class Control {
     private FieldRelativeMovement fieldRelative;
     private SparkMax dumpMotor;
     private Lifting lifting;
-        private RobotTransform transform;
+        private Kinematics kinematics;
     
         public Control(XboxController controller, FieldRelativeMovement fieldRelative, SparkMax dumpMotor,
-                Lifting lifting, RobotTransform transform) {
+                Lifting lifting, Kinematics kinematics) {
             this.controller = controller;
             this.fieldRelative = fieldRelative;
             this.dumpMotor = dumpMotor;
             this.lifting = lifting;
-            this.transform = transform;
+            this.kinematics = kinematics;
     }
 
     void teleopPeriodic() {
@@ -70,7 +69,7 @@ public class Control {
         }
 
         if (controller.getBackButton()) {
-            transform.resetGyro();
+            kinematics.resetGyro();
             return;
         }
 
