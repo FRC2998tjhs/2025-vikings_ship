@@ -5,6 +5,8 @@ import org.dyn4j.geometry.Vector2;
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import frc.robot.FieldRelativeMovement.Alignment;
 
 public class Control {
@@ -38,12 +40,33 @@ public class Control {
 
         var dpadDown = controller.getPOV() == 180;
         if (dpadDown) {
-            lifting.releaseArms();
+            lifting.drop();
         }
-
         var dpadUp = controller.getPOV() == 0;
         if (dpadUp) {
             lifting.liftRobot();
+        }
+        var dpadRight = controller.getPOV() == 90;
+        if (dpadRight) {
+            lifting.coralGrab();
+        }
+        var dpadLeft = controller.getPOV() == 270;
+        if (dpadLeft) {
+            lifting.prepForReset();
+        }
+
+        if (controller.getRightStickButtonPressed()) {
+            lifting.right.set(true);
+        }
+        if (controller.getRightStickButtonReleased()) {
+            lifting.right.set(false);
+        }
+
+        if (controller.getLeftStickButtonPressed()) {
+            lifting.front.set(Value.kForward);
+        }
+        if (controller.getLeftStickButtonReleased()) {
+            lifting.front.set(Value.kReverse);
         }
 
         if (controller.getBackButton()) {

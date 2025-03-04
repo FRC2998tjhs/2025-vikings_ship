@@ -19,6 +19,8 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 
+import frc.robot.Control;
+
 public class Robot extends TimedRobot {
   private static final boolean DO_CALIBRATION = false;
 
@@ -64,10 +66,15 @@ public class Robot extends TimedRobot {
 
   int solenoidModuleCan = 7;
   PneumaticsModuleType pneumaticsType = PneumaticsModuleType.CTREPCM;
-  Lifting lifting = new Lifting(new Solenoid(solenoidModuleCan, pneumaticsType, 1),
-      new Solenoid(solenoidModuleCan, pneumaticsType, 0), new Solenoid(solenoidModuleCan, pneumaticsType, 2));
+  Lifting lifting = new Lifting(
+    // null,
+    new Solenoid(solenoidModuleCan, pneumaticsType, 1),
+    // null,
+    new Solenoid(solenoidModuleCan, pneumaticsType, 0),
+    new DoubleSolenoid(solenoidModuleCan, pneumaticsType, 4, 5)
+  );
 
-  Control control = new Control(controller, fieldRelative, dumpMotor, lifting);
+  Control control = new Control(controller, fieldRelative, dumpMotor, lifting, transform);
 
   @Override
   public void robotPeriodic() {
@@ -76,14 +83,18 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    fieldRelative.setBackward();
-    // lifting.onStart();
+    // fieldRelative.setBackward();
+    fieldRelative.setForward();
   }
 
   @Override
   public void autonomousInit() {
     fieldRelative.setBackward();
-    new Autonomous(fieldRelative, dumpMotor).command().schedule();
+
+    new Autonomous(fieldRelative, dumpMotor, robotRelative)
+      .scoreFromCenter()
+      // .moveForward()
+      .schedule();
   }
 
   @Override
@@ -97,19 +108,6 @@ public class Robot extends TimedRobot {
       return;
     }
 
-    // if (controller.getLeftBumperButton()) {
-    // left.set(Value.kForward);
-    // }
-    // if (controller.getRightBumperButton()) {
-    // left.set(Value.kReverse);
-    // }
-    // if (controller.getYButton()) {
-    // left.set(Value.kOff);
-    // }
-    // left.set(controller.getLeftBumperButton());
-    // lifting.right.set(controller.getRightBumperButton());
-    // lifting.rear.set(controller.getYButton());
-
     control.teleopPeriodic();
-  }
+ }
 }

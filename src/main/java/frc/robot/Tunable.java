@@ -11,7 +11,7 @@ public class Tunable {
     public static final double dumpSpeed = 0.3;
 
     public static final double autoDumpFor = 1;
-    public static final double autoMoveSpeed = 0.1;
+    public static final double autoMoveSpeed = 0.15;
     public static final double atReefError = 0.06;
 
     public static final double leftStickDeadzone = 0.15;

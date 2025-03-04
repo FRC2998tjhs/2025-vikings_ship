@@ -43,7 +43,10 @@ public class FieldRelativeMovement {
             turn = turningPid.calculate(error.getDegrees(), 0);
         }
 
-        robotRelative.setDesiredState(robotMovement(movementInput), turn);
+        // System.out.println(movementInput);
+        Vector2 robotMovement = robotMovement(movementInput);
+        // System.out.println(robotMovement);
+        robotRelative.setDesiredState(robotMovement, turn);
     }
 
     private Vector2 robotMovement(Vector2 fieldMovement) {
