@@ -51,21 +51,10 @@ public class Control {
         }
         var dpadLeft = controller.getPOV() == 270;
         if (dpadLeft) {
-            lifting.prepForReset();
+            lifting.reset();
         }
-
-        if (controller.getRightStickButtonPressed()) {
-            lifting.right.set(true);
-        }
-        if (controller.getRightStickButtonReleased()) {
-            lifting.right.set(false);
-        }
-
         if (controller.getLeftStickButtonPressed()) {
-            lifting.front.set(Value.kForward);
-        }
-        if (controller.getLeftStickButtonReleased()) {
-            lifting.front.set(Value.kReverse);
+            lifting.start();
         }
 
         if (controller.getBackButton()) {

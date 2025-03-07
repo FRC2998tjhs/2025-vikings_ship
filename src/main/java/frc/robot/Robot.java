@@ -65,7 +65,9 @@ public class Robot extends TimedRobot {
   Lifting lifting = new Lifting(
     new Solenoid(solenoidModuleCan, pneumaticsType, 1),
     new Solenoid(solenoidModuleCan, pneumaticsType, 0),
-    new DoubleSolenoid(solenoidModuleCan, pneumaticsType, 4, 5)
+    new DoubleSolenoid(solenoidModuleCan, pneumaticsType, 4, 5),
+    new Solenoid(solenoidModuleCan, pneumaticsType, 6),
+    new Solenoid(solenoidModuleCan, pneumaticsType, 3)
   );
 
   Control control = new Control(controller, fieldRelative, dumpMotor, lifting, transform);
@@ -78,7 +80,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     fieldRelative.setBackward();
-    // fieldRelative.setForward();
+    lifting.start();
   }
 
   @Override
@@ -89,6 +91,11 @@ public class Robot extends TimedRobot {
       .scoreFromCenter()
       // .moveForward()
       .schedule();
+  }
+
+  @Override
+  public void teleopInit() {
+    lifting.start();
   }
 
   @Override
